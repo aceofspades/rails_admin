@@ -21,17 +21,26 @@ module RailsAdmin
     # model).
     module Sections
       def self.included(klass)
-        # Register accessors for all the sections in this namespace
-        constants.each do |name|
-          section = "RailsAdmin::Config::Sections::#{name}".constantize
-          name = name.to_s.underscore.to_sym
-          klass.send(:define_method, name) do |&block|
-            @sections = {} unless @sections
-            @sections[name] = section.new(self) unless @sections[name]
-            @sections[name].instance_eval &block if block
-            @sections[name]
+        klass.class_eval do
+          def self.register_section(name)
+            section = "RailsAdmin::Config::Sections::#{name}".constantize
+            name = name.to_s.underscore.to_sym
+            define_method(name) do |&block|
+              @sections = {} unless @sections
+              @sections[name] = section.new(self) unless @sections[name]
+              @sections[name].instance_eval &block if block
+              @sections[name]
+            end
+          end
+
+          # Detect sections that have been configured for the model
+          def has_section?(name)
+            @sections && @sections.has_key?(name)
           end
         end
+
+        # Register accessors for all the sections in this namespace
+        constants.each { |name| klass.register_section(name) }
       end
     end
   end
