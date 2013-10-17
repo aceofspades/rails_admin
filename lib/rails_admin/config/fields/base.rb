@@ -104,7 +104,7 @@ module RailsAdmin
         end
 
         register_instance_option :formatted_value do
-          value.to_s
+          CGI::escapeHTML(value.to_s)
         end
 
         # output for pretty printing (show, list)
