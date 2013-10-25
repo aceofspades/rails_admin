@@ -20,7 +20,8 @@ module RailsAdmin
           [value].flatten.select(&:present?).map do |associated|
             amc = polymorphic? ? RailsAdmin.config(associated) : associated_model_config # perf optimization for non-polymorphic associations
             am = amc.abstract_model
-            wording = associated.send(amc.object_label_method)
+            _wording = associated.send(amc.object_label_method)
+            wording = _wording.nil? ? nil : CGI::escapeHTML(_wording.to_s)
             can_see = !am.embedded? && (show_action = v.action(:show, am, associated))
             can_see ? v.link_to(wording, v.url_for(:action => show_action.action_name, :model_name => am.to_param, :id => associated.id), :class => 'pjax') : wording
           end.to_sentence.html_safe
