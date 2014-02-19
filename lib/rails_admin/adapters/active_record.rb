@@ -159,12 +159,22 @@ module RailsAdmin
         # this operator/value has been discarded (but kept in the dom to override the one stored in the various links of the page)
         return if operator == '_discard' || value == '_discard'
 
+        if [:string, :text].include?(type)
+          if operator == '_blank' || value == '_blank'
+            return ["(#{column} IS NULL OR #{column} = '')"]
+          elsif operator == '_present' || value == '_present'
+            return ["(#{column} IS NOT NULL AND #{column} != '')"]
+          end
+        else
+          if operator == '_blank' || value == '_blank'
+            return ["(#{column} IS NULL)"]
+          elsif operator == '_present' || value == '_present'
+            return ["(#{column} IS NOT NULL)"]
+          end
+        end
+
         # filtering data with unary operator, not type dependent
-        if operator == '_blank' || value == '_blank'
-          return ["(#{column} IS NULL OR #{column} = '')"]
-        elsif operator == '_present' || value == '_present'
-          return ["(#{column} IS NOT NULL AND #{column} != '')"]
-        elsif operator == '_null' || value == '_null'
+        if operator == '_null' || value == '_null'
           return ["(#{column} IS NULL)"]
         elsif operator == '_not_null' || value == '_not_null'
           return ["(#{column} IS NOT NULL)"]
